@@ -6,7 +6,7 @@ import (
 	"github.com/cgradwohl/goth-stack/view/component"
 )
 
-func getUser(c context.Context) string {
+func getAuthenticatedUser(c context.Context) string {
 	user, ok := c.Value("user").(string)
 	if !ok {
 		return ""
@@ -16,7 +16,7 @@ func getUser(c context.Context) string {
 
 templ Show(user model.User) {
 	<h1>
-		{ getUser(ctx) }
+		{ getAuthenticatedUser(ctx) }
 	</h1>
 	@layout.Base() {
 		<h1>Hello creature { user.Email } </h1>
