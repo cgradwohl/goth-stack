@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cgradwohl/goth-stack/handler"
@@ -18,9 +19,22 @@ func main() {
 	// userHandler := handler.UserHandler{db}
 
 	userHandler := handler.UserHandler{}
+	app.Use(withUser)
 	app.GET("/user", userHandler.HandleUserShow)
 
 	app.Start(":3000")
 
 	fmt.Println("hello creature ...")
+}
+
+// custom middleware function in echo
+// here I am mocking authorization by user email
+func withUser(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// get user from db
+		// user := db.FindUser()
+		ctx := context.WithValue(c.Request().Context(), "user", "c@gg.com from  middleware context")
+		c.SetRequest(c.Request().WithContext(ctx))
+		return next(c)
+	}
 }

@@ -6,7 +6,18 @@ import (
 	"github.com/cgradwohl/goth-stack/view/component"
 )
 
+func getUser(c context.Context) string {
+	user, ok := c.Value("user").(string)
+	if !ok {
+		return ""
+	}
+	return user
+}
+
 templ Show(user model.User) {
+	<h1>
+		{ getUser(ctx) }
+	</h1>
 	@layout.Base() {
 		<h1>Hello creature { user.Email } </h1>
 		@component.Input("email", "email")
