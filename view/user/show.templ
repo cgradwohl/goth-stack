@@ -1,5 +1,9 @@
 package user
 
+import "github.com/cgradwohl/goth-stack/view/layout"
+
 templ Show(name string) {
-	<h1>Hello creature { name } </h1>
+	@layout.Base() {
+		<h1>Hello creature { name } </h1>
+	}
 }
