@@ -1,9 +1,14 @@
 package user
 
-import "github.com/cgradwohl/goth-stack/view/layout"
+import (
+	"github.com/cgradwohl/goth-stack/view/layout"
+	"github.com/cgradwohl/goth-stack/model"
+	"github.com/cgradwohl/goth-stack/view/component"
+)
 
-templ Show(name string) {
+templ Show(user model.User) {
 	@layout.Base() {
-		<h1>Hello creature { name } </h1>
+		<h1>Hello creature { user.Email } </h1>
+		@component.Input("email", "email")
 	}
 }
