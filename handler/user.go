@@ -13,4 +13,5 @@ func (h UserHandler) HandleUserShow(c echo.Context) error {
 		Email: "c@cs.com",
 	}
 	return render(c, user.Show(u))
+
 }

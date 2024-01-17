@@ -2,10 +2,15 @@ package layout
 
 templ Base() {
 	// generate html biolerplate for page
-	<html>
-		<head></head>
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<link rel="stylesheet" href="/css/pico.min.css"/>
+		</head>
 		<body>
 			<p>THIS IS THE BASE LAYOUT</p>
+			<a href="#" role="button" class="secondary">Secondary</a>
+			<a href="#" role="button" class="contrast">Contrast</a>
 			{ children... }
 		</body>
 	</html>
