@@ -1,6 +1,21 @@
-## GOTH STACK - Go, Templ, HTMX 
+# GOTH STACK - Go, Templ, HTMX
 
-## Echo
+
+# CSS Framework Choice
+## Pico 🏆
+- no javascript
+- tiny, less than 10kb
+- extensible and idiomatic
+
+## Bulma
+- no javascript
+- larger
+- larger api better
+- also extensible
+- require sass to fully customize
+
+# HTTP Framework Choice
+## Echo 🏆
 - compatible with http/net
 Echo - func (context) error
 
@@ -8,8 +23,10 @@ Echo - func (context) error
 - not compatible with core http/net since uses fast api
 Fiber - func (context) error
 
-Chi
+## Chi
 
 ## Gin
 - does not return an error so no central error handling
 Gin - func(context)
+
+# Deployment Choice
