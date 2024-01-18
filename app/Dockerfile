@@ -75,7 +75,7 @@ COPY --from=build /bin/server /bin/
 COPY assets /assets
 
 # Expose the port that the application listens on.
-EXPOSE 3000
+EXPOSE 80
 
 # What the container should run when it is started.
 ENTRYPOINT [ "/bin/server" ]

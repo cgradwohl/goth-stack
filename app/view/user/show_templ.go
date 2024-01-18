@@ -11,9 +11,9 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/cgradwohl/goth-stack/model"
-	"github.com/cgradwohl/goth-stack/view/component"
-	"github.com/cgradwohl/goth-stack/view/layout"
+	"github.com/cgradwohl/goth-stack/app/model"
+	"github.com/cgradwohl/goth-stack/app/view/component"
+	"github.com/cgradwohl/goth-stack/app/view/layout"
 )
 
 func getAuthenticatedUser(c context.Context) string {

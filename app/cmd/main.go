@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 
-	"github.com/cgradwohl/goth-stack/handler"
+	"github.com/cgradwohl/goth-stack/app/handler"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,7 +27,11 @@ func main() {
 	app.Use(withUser)
 	app.GET("/user", userHandler.HandleUserShow)
 
-	app.Start(":3000")
+	app.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello, World!")
+	})
+
+	app.Start(":80")
 
 	fmt.Println("hello creature ...")
 }
