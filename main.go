@@ -145,7 +145,7 @@ func main() {
 		image, err := docker.NewImage(ctx, "my-image", &docker.ImageArgs{
 			Build: docker.DockerBuildArgs{
 				Context:  pulumi.String("./app"),
-				Platform: pulumi.String("linux/arm64"),
+				Platform: pulumi.String("linux/arm64/v8"),
 			},
 			ImageName: repo.RepositoryUrl,
 			Registry: docker.RegistryArgs{
