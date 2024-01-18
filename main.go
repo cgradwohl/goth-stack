@@ -145,7 +145,7 @@ func main() {
 		image, err := docker.NewImage(ctx, "my-image", &docker.ImageArgs{
 			Build: docker.DockerBuildArgs{
 				Context:  pulumi.String("./app"),
-				Platform: pulumi.String("linux/amd64"),
+				Platform: pulumi.String("linux/arm64"),
 			},
 			ImageName: repo.RepositoryUrl,
 			Registry: docker.RegistryArgs{
@@ -181,6 +181,9 @@ func main() {
 			RequiresCompatibilities: pulumi.StringArray{pulumi.String("FARGATE")},
 			ExecutionRoleArn:        taskExecRole.Arn,
 			ContainerDefinitions:    containerDef,
+			RuntimePlatform: &ecs.TaskDefinitionRuntimePlatformArgs{
+				CpuArchitecture: pulumi.String("ARM64"),
+			},
 		})
 		if err != nil {
 			return err
