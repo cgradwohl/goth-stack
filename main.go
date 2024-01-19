@@ -58,26 +58,60 @@ func main() {
 		}
 
 		// Create an IAM role that can be used by our service's task.
+
 		taskExecRole, err := iam.NewRole(ctx, "task-exec-role", &iam.RoleArgs{
 			AssumeRolePolicy: pulumi.String(`{
-					"Version": "2008-10-17",
-					"Statement": [{
-							"Sid": "",
-							"Effect": "Allow",
-							"Principal": {
-									"Service": "ecs-tasks.amazonaws.com"
-							},
-							"Action": "sts:AssumeRole"
-					}]
+					"Version": "2012-10-17",
+					"Statement": [
+							{
+									"Effect": "Allow",
+									"Principal": {
+											"Service": "ecs-tasks.amazonaws.com"
+									},
+									"Action": "sts:AssumeRole"
+							}
+					]
 			}`),
 		})
+
 		if err != nil {
-			return err
+			// handle error
 		}
-		_, err = iam.NewRolePolicyAttachment(ctx, "task-exec-policy", &iam.RolePolicyAttachmentArgs{
+
+		// Create a policy for logs:CreateLogGroup and attach it to the role
+		logPolicy, err := iam.NewPolicy(ctx, "logPolicy", &iam.PolicyArgs{
+			Policy: pulumi.String(`{
+					"Version": "2012-10-17",
+					"Statement": [
+							{
+									"Effect": "Allow",
+									"Action": "logs:CreateLogGroup",
+									"Resource": "*"
+							}
+					]
+			}`),
+		})
+
+		if err != nil {
+			// handle error
+		}
+
+		// Attach the AmazonECSTaskExecutionRolePolicy
+		_, err = iam.NewRolePolicyAttachment(ctx, "task-exec-policy-amazon", &iam.RolePolicyAttachmentArgs{
 			Role:      taskExecRole.Name,
 			PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"),
 		})
+
+		if err != nil {
+			return err
+		}
+
+		// Attach your custom logPolicy
+		_, err = iam.NewRolePolicyAttachment(ctx, "task-exec-policy-custom", &iam.RolePolicyAttachmentArgs{
+			Role:      taskExecRole.Name,
+			PolicyArn: logPolicy.Arn,
+		})
+
 		if err != nil {
 			return err
 		}
@@ -142,10 +176,11 @@ func main() {
 		repoPass := repoCreds.Index(pulumi.Int(1))
 
 		// Build the container image (requires local Docker daemon)
-		image, err := docker.NewImage(ctx, "my-image", &docker.ImageArgs{
+		image, err := docker.NewImage(ctx, "goth-stack-image", &docker.ImageArgs{
 			Build: docker.DockerBuildArgs{
-				Context:  pulumi.String("./app"),
-				Platform: pulumi.String("linux/arm64/v8"),
+				Context:    pulumi.String("./app"),
+				Dockerfile: pulumi.String("./app/Dockerfile"),
+				Platform:   pulumi.String("linux/arm64"),
 			},
 			ImageName: repo.RepositoryUrl,
 			Registry: docker.RegistryArgs{
@@ -161,16 +196,27 @@ func main() {
 		// Create the container definition
 		containerDef := image.ImageName.ApplyT(func(name string) (string, error) {
 			fmtstr := `[{
-				"name": "my-app",
+				"name": "goth-app",
 				"image": %q,
 				"portMappings": [{
 					"containerPort": 80,
 					"hostPort": 80,
 					"protocol": "tcp"
-				}]
+				}],
+				"logConfiguration": {
+					"logDriver": "awslogs",
+					"options": {
+						"awslogs-create-group": "true",
+						"awslogs-group": "awslogs-goth-stack",
+						"awslogs-region": "us-east-1",
+						"awslogs-stream-prefix": "awslogs-goth-stack"
+					}
+				}
 			}]`
 			return fmt.Sprintf(fmtstr, name), nil
 		}).(pulumi.StringOutput)
+
+		fmt.Println("containerDef:", containerDef)
 
 		// Spin up a load balanced service running the container image created earlier
 		appTask, err := ecs.NewTaskDefinition(ctx, "app-task", &ecs.TaskDefinitionArgs{
@@ -188,7 +234,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = ecs.NewService(ctx, "app-svc", &ecs.ServiceArgs{
+		_, err = ecs.NewService(ctx, "goth-app-service", &ecs.ServiceArgs{
 			Cluster:        cluster.Arn,
 			DesiredCount:   pulumi.Int(5),
 			LaunchType:     pulumi.String("FARGATE"),
@@ -201,7 +247,7 @@ func main() {
 			LoadBalancers: ecs.ServiceLoadBalancerArray{
 				ecs.ServiceLoadBalancerArgs{
 					TargetGroupArn: webTg.Arn,
-					ContainerName:  pulumi.String("my-app"),
+					ContainerName:  pulumi.String("goth-app"),
 					ContainerPort:  pulumi.Int(80),
 				},
 			},
