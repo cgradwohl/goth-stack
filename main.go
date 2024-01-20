@@ -17,7 +17,7 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		// Create a new VPC and subnets using AWS Crosswalk
+		// ✅✅Create a new VPC and subnets using AWS Crosswalk
 		vpcCidrBlock := "10.0.0.0/16"
 		vpc, err := awsx.NewVpc(ctx, "vpc", &awsx.VpcArgs{
 			EnableDnsHostnames: pulumi.Bool(true),
@@ -27,7 +27,7 @@ func main() {
 			return err
 		}
 
-		// Create a SecurityGroup that permits HTTP ingress and unrestricted egress.
+		// ✅✅Create a SecurityGroup that permits HTTP ingress and unrestricted egress.
 		webSg, err := ec2.NewSecurityGroup(ctx, "web-sg", &ec2.SecurityGroupArgs{
 			VpcId: vpc.VpcId,
 			Egress: ec2.SecurityGroupEgressArray{
@@ -51,13 +51,13 @@ func main() {
 			return err
 		}
 
-		// Create an ECS cluster to run a container-based service.
+		// ✅✅Create an ECS cluster to run a container-based service.
 		cluster, err := ecs.NewCluster(ctx, "app-cluster", nil)
 		if err != nil {
 			return err
 		}
 
-		// Create an IAM role that can be used by our service's task.
+		// TODO: Create an IAM role that can be used by our service's task.
 
 		taskExecRole, err := iam.NewRole(ctx, "task-exec-role", &iam.RoleArgs{
 			AssumeRolePolicy: pulumi.String(`{
@@ -116,7 +116,7 @@ func main() {
 			return err
 		}
 
-		// Create a load balancer to listen for HTTP traffic on port 80.
+		// ✅✅Create a load balancer to listen for HTTP traffic on port 80.
 		webLb, err := elb.NewLoadBalancer(ctx, "web-lb", &elb.LoadBalancerArgs{
 			// Subnets:        toPulumiStringArray(subnet.Ids),
 			Subnets:        vpc.PublicSubnetIds,
@@ -148,7 +148,7 @@ func main() {
 			return err
 		}
 
-		// Create an ECR repository to store the container image
+		// ✅✅Create an ECR repository to store the container image
 		repo, err := ecr.NewRepository(ctx, "foo", &ecr.RepositoryArgs{
 			ForceDelete: pulumi.Bool(true),
 		})
@@ -156,8 +156,7 @@ func main() {
 			return err
 		}
 
-		// Get credentials for the new ECR repository
-		repoCreds := repo.RegistryId.ApplyT(func(rid string) ([]string, error) {
+		// ✅✅eds := repo.RegistryId.ApplyT(func(rid string) ([]string, error) {
 			creds, err := ecr.GetCredentials(ctx, &ecr.GetCredentialsArgs{
 				RegistryId: rid,
 			})
@@ -175,7 +174,7 @@ func main() {
 		repoUser := repoCreds.Index(pulumi.Int(0))
 		repoPass := repoCreds.Index(pulumi.Int(1))
 
-		// Build the container image (requires local Docker daemon)
+		// ✅✅Build the container image (requires local Docker daemon)
 		image, err := docker.NewImage(ctx, "goth-stack-image", &docker.ImageArgs{
 			Build: docker.DockerBuildArgs{
 				Context:    pulumi.String("./app"),
